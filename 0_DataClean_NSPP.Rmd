@@ -1,0 +1,46 @@
+---
+title: "Data Cleaning NSPP"
+author: "Dexter N. Pante"
+date: "2023-07-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(anytime)
+```
+
+
+```{r}
+monthly_nspp <- read_csv("monthly_nspp.csv")
+tidy_nspp <- monthly_nspp %>%
+  mutate(Region = "", `Fiscal Year` = 2022)
+
+colnames (tidy_nspp) <- c("Month", "Year", "Division", "Kinder.c", "Elem.c", "JHS.c", "SHS.prop", "SHS.c", "Total.c", "Kinder.h", "Elem.h", "JHS.h", "SHS.h", "Total.h", "Percent Filled", "Unfilled", "Region") 
+```
+
+
+
+```{r}
+tidy_nspp <- tidy_nspp %>% select(-c(7, 9, 14, 15, 16))
+tidy_nspp <- tidy_nspp[-(1:29),]
+```
+
+```{r}
+write_csv(tidy_nspp, "tidy_nspp.csv")
+
+tidy_nspp <- read_csv("tidy_nspp.csv")
+tidy_nspp <- tidy_nspp %>% mutate (Period=paste(Month, Year, sep = "-")) %>% mutate (Period=anydate(Period))
+tidy_nspp <- na.omit(tidy_nspp) %>% select(Region, Division, Period, Year, 4:11)
+```
+
+
+```{r}
+long_nspp <- tidy_nspp %>% pivot_longer(cols = 5:8, names_to = "Levels Created", values_to =  "Items Created") %>% pivot_longer(cols = 5:8, names_to = "Levels Hired", values_to = "Items Hired")
+```
+
